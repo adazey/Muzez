@@ -15,7 +15,6 @@ from   vlc import MediaPlayer
 from   HTMLParser import HTMLParser
 from   Tkinter import *
 
-mbl='goo.gl/Wp1yiD'
 cid="50aaa3de7469fde7c1e5e6ad7c91275c"
 client=sc.Client(client_id=cid)
 parser=HTMLParser()
