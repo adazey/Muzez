@@ -1,15 +1,14 @@
 import sys
 sys.path.append("./libs/")
 import urllib as u
-import youtube_dl
 import pafy
 import soundcloud as sc
 import os
 import re
 import json
-import TkTreectrl as treectrl
 import tkFileDialog
 import thread
+from   nltk.draw.table import *
 from   tabs import *
 from   vlc import MediaPlayer
 from   HTMLParser import HTMLParser
@@ -99,9 +98,9 @@ def doSearch(event,query=None):
     query=event.widget.get()
   if query!='':
     searches=searchYT(query)+searchSC(query)
-    lbox.delete(0,END)
+    lbox.clear()
     for i in searches:
-      lbox.insert(END,i['title'],i['length'])
+      lbox.append([i['title'],i['length']])
       urls.append(i['url'])
     return urls
 
@@ -151,36 +150,55 @@ def setDLPath():
   dlpath=tkFileDialog.askdirectory()
   os.chdir(dlpath)
   savepath.config(text="Save Path:    "+dlpath)
+  with open(origpath+"/opt/options",'r') as f:
+    edt=json.loads(f.read())
+  edt['dlPath']=dlpath
+  with open(origpath+"/opt/options",'w') as f:
+    x=json.JSONEncoder()
+    f.write(x.encode(edt))
 
+def makeSelect(event):
+  print "CX"
+  x=event.widget.get()
+  return x
+
+origpath=os.getcwd()
+with open(origpath+"/opt/options",'r') as f:
+  opt=json.loads(f.read())
+if opt['dlPath']==None:dlpath=os.getcwd()
+else: dlpath=opt['dlPath']
 urls=[]
 w=Tk()
+img = PhotoImage(master=w,file="img/Muzez.gif")
+w.call('wm','iconphoto',w._w,img)
 oldUrl=''
-main=LabelFrame(w)
+main=LabelFrame(w,highlightthickness=0,bd=0)
 PLAY=PhotoImage(master=w,file='img/playButton.gif')
 PAUSE=PhotoImage(master=w,file='img/pauseButton.gif')
 DOWNLOAD=PhotoImage(master=w,file='img/downloadButton.gif')
 w.title("Muzez Client")
-w.geometry("808x665")
-lbox=treectrl.MultiListbox(main)
+w.geometry("819x610")
+lbox=Table(main,['Title','Duration'])
 search=Entry(main)
 search.config(width=75)
 search.focus()
 search.grid(row=1,column=1)
 search.bind("<Return>",func=doSearch)
-pb=Button(main,command=lambda:playAudio(urls[lbox.selection_get()[0]-1]))
-pb.config(image=PLAY,width=23,height=23)
-pb.grid(row=1,column=3)
+pb=Button(main,command=lambda:playAudio(urls[lbox.selected_row()]))
+pb.config(image=PLAY,width=35,height=35,highlightthickness=0,bd=0)
+pb.grid(row=1,column=3,rowspan=2)
 pbt=Button(main,command=lambda:pauseAudio())
-pbt.config(image=PAUSE,width=23,height=23)
-pbt.grid(row=1,column=4)
-db=Button(main,command=lambda:w.after(1,doDL(urls[lbox.selection_get()[0]-1])))
-db.config(image=DOWNLOAD,width=23,height=23)
-db.grid(row=1,column=5)
-lbox.config(columns=('Title','Duration'),width=800,height=600)
+pbt.config(image=PAUSE,width=35,height=35,highlightthickness=0,bd=0)
+pbt.grid(row=1,column=4,rowspan=2)
+db=Button(main,command=lambda:w.after(1,doDL(urls[lbox.selected_row()])))
+db.config(image=DOWNLOAD,width=35,height=35,highlightthickness=0,bd=0)
+db.grid(row=1,column=5,rowspan=2)
+lbox.columnconfig(0,width=90)
+lbox.columnconfig(1,width=10,height=35)
+lbox.bind("<Double-Button-1>",makeSelect)
 lbox.grid(row=3,column=1,columnspan=5,sticky='nesw')
-
 submit=Button(main,text="Search",command=doSearch(None,query=search.get())).grid(row=1,column=2)
-savepath=Label(main,text="Save Path:    "+os.getcwd())
+savepath=Label(main,text="Save Path:    "+dlpath)
 savepath.grid(row=2,column=1,columnspan=1)
 Button(main,text='Browse', command=setDLPath).grid(row=2,column=2,columnspan=1)
 main.grid(row=1,column=1)
