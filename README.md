@@ -17,7 +17,7 @@ The program is still in developmet, and is nowhere near completion.
 I haven't tested this with anything other than Ubuntu, and I don't know how other distributions install packages. If you have experience with any other Distro and are able to install it, if you could email me the installation code, that'd be awesome.
 ```
 sudo apt-get install python2.7 pip ffmpeg libmp3lame0
-pip install youtube_dl pafy soundcloud HTMLParser
+pip install soundcloud HTMLParser
 ```
 #### OSX
 I'll update this in a few days when I can use a friend's Macbook to install this. If one of you could email me the install instructions before I do, that'd be awesome.
