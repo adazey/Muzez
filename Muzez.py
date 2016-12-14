@@ -1,13 +1,16 @@
 import sys
-sys.path.append("./libs/")
+import os
+origpath=os.getcwd()
+sys.path.append(origpath+"/libs/")
 import urllib as u
 import pafy
 import soundcloud as sc
-import os
 import re
 import json
 import tkFileDialog
 import thread
+import spotipy
+import platform as pl
 from   nltk.draw.table import *
 from   tabs import *
 from   vlc import MediaPlayer
@@ -17,6 +20,13 @@ from   Tkinter import *
 cid="50aaa3de7469fde7c1e5e6ad7c91275c"
 client=sc.Client(client_id=cid)
 parser=HTMLParser()
+if pl.system().lower().find('windows')!=-1:
+  if pl.architecture()[0]=='64bit':
+    ffmpeg=origpath+"/libs/ffmpeg/ffmpeg64.exe"
+  else:
+    ffmpeg=origpath+"/libs/ffmpeg/ffmpeg32.exe"
+elif pl.system().lower().find("darwin")!=-1:
+  ffmpeg=origpath+'/libs/ffmpeg/ffmpegOSX'
 
 def searchSC(terms,limit=30):
   tracks=client.get('/tracks',q=terms,filter="public",limit=limit)
@@ -86,7 +96,7 @@ def fetchYT(ident,path=os.getcwd()):
   audio=v.getbestaudio()
   audio.download(path,True)
   if str(audio).find("mp3")==-1:
-    os.system("ffmpeg -i '%s' -codec:a libmp3lame -qscale:a 2 '%s.mp3'"%(
+    os.system(ffmpeg+" -i '%s' -codec:a libmp3lame -qscale:a 2 '%s.mp3'"%(
       path+"/"+str(v.title)+"."+str(audio).split(":",1)[1].split("@",1)[0],path+"/"+str(v.title)))
     os.system('rm "%s"'%(path+"/"+str(v.title)+"."+str(audio).split(":",1)[1].split("@",1)[0]))
   print "Done"
@@ -177,7 +187,6 @@ PLAY=PhotoImage(master=w,file='img/playButton.gif')
 PAUSE=PhotoImage(master=w,file='img/pauseButton.gif')
 DOWNLOAD=PhotoImage(master=w,file='img/downloadButton.gif')
 w.title("Muzez Client")
-w.geometry("819x610")
 lbox=Table(main,['Title','Duration'])
 search=Entry(main)
 search.config(width=75)
