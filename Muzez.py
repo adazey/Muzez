@@ -9,7 +9,6 @@ import re
 import json
 import tkFileDialog
 import thread
-import spotipy
 import platform as pl
 from   nltk.draw.table import *
 from   tabs import *
@@ -27,6 +26,8 @@ if pl.system().lower().find('windows')!=-1:
     ffmpeg=origpath+"/libs/ffmpeg/ffmpeg32.exe"
 elif pl.system().lower().find("darwin")!=-1:
   ffmpeg=origpath+'/libs/ffmpeg/ffmpegOSX'
+else:
+  ffmpeg="ffmpeg"
 
 def searchSC(terms,limit=30):
   tracks=client.get('/tracks',q=terms,filter="public",limit=limit)
@@ -52,7 +53,6 @@ def fetchSC(url,path=os.getcwd()):
   f=open(path+"/"+track.title+'.mp3','wb')
   f.write(u.urlopen(str(stream_url.location)).read())
   f.close()
-  print "Done"
 
 def searchYT(terms,limit=30):
   results=[]
@@ -99,7 +99,6 @@ def fetchYT(ident,path=os.getcwd()):
     os.system(ffmpeg+" -i '%s' -codec:a libmp3lame -qscale:a 2 '%s.mp3'"%(
       path+"/"+str(v.title)+"."+str(audio).split(":",1)[1].split("@",1)[0],path+"/"+str(v.title)))
     os.system('rm "%s"'%(path+"/"+str(v.title)+"."+str(audio).split(":",1)[1].split("@",1)[0]))
-  print "Done"
 
 def doSearch(event,query=None):
   global urls
@@ -167,16 +166,16 @@ def setDLPath():
     x=json.JSONEncoder()
     f.write(x.encode(edt))
 
-def makeSelect(event):
-  print "CX"
-  x=event.widget.get()
-  return x
-
-origpath=os.getcwd()
 with open(origpath+"/opt/options",'r') as f:
   opt=json.loads(f.read())
-if opt['dlPath']==None:dlpath=os.getcwd()
-else: dlpath=opt['dlPath']
+if opt['dlPath']==None:
+  dlpath=origpath
+  opt['dlPath']=dlpath
+  with open(origpath+"/opt/options",'w') as f:
+    x=json.JSONEncoder()
+    f.write(x.encode(opt))
+else:
+  dlpath=opt['dlPath']
 urls=[]
 w=Tk()
 img = PhotoImage(master=w,file="img/Muzez.gif")
@@ -204,7 +203,6 @@ db.config(image=DOWNLOAD,width=35,height=35,highlightthickness=0,bd=0)
 db.grid(row=1,column=5,rowspan=2)
 lbox.columnconfig(0,width=90)
 lbox.columnconfig(1,width=10,height=35)
-lbox.bind("<Double-Button-1>",makeSelect)
 lbox.grid(row=3,column=1,columnspan=5,sticky='nesw')
 submit=Button(main,text="Search",command=doSearch(None,query=search.get())).grid(row=1,column=2)
 savepath=Label(main,text="Save Path:    "+dlpath)
