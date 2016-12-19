@@ -134,7 +134,7 @@ def find_lib():
             if plugin_path is None:
                  # try some standard locations.
                 for p in ('Program Files\\VideoLan\\', 'VideoLan\\',
-                          'Program Files\\',           ''):
+                          'Program Files\\',           'vlc\\'):
                     p = 'C:\\' + p + 'VLC\\libvlc.dll'
                     if os.path.exists(p):
                         plugin_path = os.path.dirname(p)
